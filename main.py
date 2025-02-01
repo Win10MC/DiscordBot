@@ -1,37 +1,43 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands as cmds, tasks
 import top_secret.encryption as encryption
-import time
+import asyncio
+import os
+from itertools import cycle
+import random
+
+statuses = ["with your mom", "with your dad", "with your sister", "with your brother", "with your grandma", "with your grandpa"]
 
 intents = discord.Intents.all()
 intents.presences = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = cmds.Bot(command_prefix="!", intents=intents)
 
-# Add an attribute to store start time
-bot.start_time = None
-
-@bot.event
-async def on_ready():
-    bot.start_time = time.time()  # Record the time when the bot is ready
-    print(f'Logged in as {bot.user}')
-
-@bot.command(name="ping", aliases=["pong", "p"])
-async def ping(ctx):
-    embed = discord.Embed(title="Ping", description="", color=discord.Color.green())
-    embed.add_field(name="Pong! 🏓", value=f"{round(bot.latency * 1000)}ms", inline=False)
-    await ctx.reply(embed=embed, ephemeral=True)
-
-@bot.command(name="uptime")
-async def uptime(ctx):
-    if bot.start_time:
-        uptime_seconds = time.time() - bot.start_time
-        uptime_message = time.strftime("%H:%M:%S", time.gmtime(uptime_seconds))
-        await ctx.reply(f'Uptime: {uptime_message}')
-    else:
-        await ctx.reply('Bot uptime is not available.')
+@tasks.loop(seconds=5)
+async def status_task():
+    await bot.change_presence(activity=discord.Game(statuses[random.randint(0, len(statuses) - 1)]))
 
 with open("token.txt", "r", encoding="utf-8") as file:
     token = encryption.decrypt(file.readline().strip())
 
-bot.run(token)
+@bot.event
+async def on_ready():
+    print(f"{bot.user} is online!")
+    status_task.start()
+    try:
+        synced_commands = await bot.tree.sync()
+        print(f"Synced {len(synced_commands)} commands.")
+    except Exception as e:
+        print(f"An error with syncing commands has occured: {e}")
+
+async def load():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py"):
+            await bot.load_extension(f"cogs.{filename[:-3]}")
+
+async def main():
+    async with bot:
+        await load()
+        await bot.start(token)
+
+asyncio.run(main())

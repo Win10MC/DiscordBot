@@ -1,9 +1,7 @@
 import discord
 from discord.ext import commands as cmds, tasks
-import top_secret.encryption as encryption
 import asyncio
 import os
-from itertools import cycle
 import random
 
 statuses = ["with your mom", "with your dad", "with your sister", "with your brother", "with your grandma", "with your grandpa"]
@@ -17,8 +15,7 @@ bot = cmds.Bot(command_prefix="!", intents=intents)
 async def status_task():
     await bot.change_presence(activity=discord.Game(statuses[random.randint(0, len(statuses) - 1)]))
 
-with open("token.txt", "r", encoding="utf-8") as file:
-    token = encryption.decrypt(file.readline().strip())
+token = "INSERT TOKEN HERE"
 
 @bot.event
 async def on_ready():

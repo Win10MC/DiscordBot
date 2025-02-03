@@ -98,7 +98,7 @@ class LevelSystem(commands.Cog):
 
         level_up_xp = math.ceil(50 * level ** 2 + 100 * level + 50)
 
-        cursor.execute("REPLACE INTO Users (guild_id, user_id, level, xp, level_up_xp) VALUES (?, ?, ?, ?, ?)", (guild_id, member_id, level, xp, level_up_xp))
+        cursor.execute("UPDATE Users SET level = ?, xp = ?, level_up_xp = ? WHERE guild_id = ? AND user_id = ?", (level, xp, level_up_xp, guild_id, member_id))
         connection.commit()
         connection.close()
 

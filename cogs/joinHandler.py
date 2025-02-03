@@ -7,6 +7,13 @@ import random
 class JoinHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @staticmethod
+    def getAvatarUrl(member: discord.Member):
+        if member.avatar is None:
+            return str(member.default_avatar.url)
+        else:
+            return str(member.avatar.url)
     
     @commands.Cog.listener()
     async def on_ready(self):
@@ -14,13 +21,13 @@ class JoinHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-
         welcome_channel = member.guild.system_channel
         images = [image for image in os.listdir("./cogs/welcomes")]
         random_image = random.choice(images)
 
         bg = easy_pil.Editor(f"./cogs/welcomes/{random_image}").resize((1920, 1080))
-        avatar_image = await easy_pil.load_image_async(str(member.avatar.url))
+
+        avatar_image = await easy_pil.load_image_async(self.getAvatarUrl(member))
         avatar = easy_pil.Editor(avatar_image).resize((250, 250)).circle_image()
 
         font_big = easy_pil.Font.poppins(size=90, variant="bold")

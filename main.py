@@ -1,13 +1,16 @@
 import discord
 from discord.ext import commands as cmds, tasks
+import top_secret.encryption as encryption
 import asyncio
 import os
 import random
+from dotenv import load_dotenv, dotenv_values 
 
 statuses = ["with your mom", "with your dad", "with your sister", "with your brother", "with your grandma", "with your grandpa"]
 
 intents = discord.Intents.all()
 intents.presences = True
+intents.members = True
 
 bot = cmds.Bot(command_prefix="!", intents=intents)
 
@@ -15,7 +18,8 @@ bot = cmds.Bot(command_prefix="!", intents=intents)
 async def status_task():
     await bot.change_presence(activity=discord.Game(statuses[random.randint(0, len(statuses) - 1)]))
 
-token = "INSERT TOKEN HERE"
+load_dotenv()
+token = os.getenv("BOT_TOKEN")
 
 @bot.event
 async def on_ready():
